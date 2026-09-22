@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>עד העצם - אונליין</title>
+<style>
+  :root{
+    box-sizing: border-box;
+    --bg:#fdf6ec; --panel:#ffffff; --ink:#2b2118; --muted:#8a7a68;
+    --accent:#d9822b; --accent-dark:#b5641a; --card-bg:#fffaf2; --card-border:#e0c9a6;
+    --gold:#d4af37; --gold-dark:#9c7a10; --danger:#c0392b; --good:#3f8f5f;
+    --shadow:rgba(80,55,20,0.18);
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#201a14; --panel:#2b241c; --ink:#f3ead9; --muted:#b6a68e;
+      --accent:#e59a3e; --accent-dark:#c47b25; --card-bg:#362c21; --card-border:#5a4a34;
+      --gold:#e6c460; --gold-dark:#b0902f; --shadow:rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#201a14; --panel:#2b241c; --ink:#f3ead9; --muted:#b6a68e;
+    --accent:#e59a3e; --accent-dark:#c47b25; --card-bg:#362c21; --card-border:#5a4a34;
+    --gold:#e6c460; --gold-dark:#b0902f; --shadow:rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Heebo",Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  body{display:flex;flex-direction:column;min-height:100%;overflow-x:hidden;}
+  #app{flex:1;display:flex;flex-direction:column;max-width:560px;margin:0 auto;width:100%;padding:8px 10px calc(14px + env(safe-area-inset-bottom,0px));}
+  header{text-align:center;padding:6px 0 2px;position:relative;}
+  header h1{font-size:1.3rem;margin:0;color:var(--accent-dark);}
+  header .sub{font-size:0.74rem;color:var(--muted);}
+  .icon-btn{position:absolute;top:calc(4px + env(safe-area-inset-top,0px));background:none;box-shadow:none;color:var(--muted);font-size:1.05rem;padding:4px 8px;}
+  .icon-btn.left{left:6px;}
+  .icon-btn.right{right:6px;}
+
+  .panel{background:var(--panel);border-radius:16px;padding:14px;box-shadow:0 2px 8px var(--shadow);margin-bottom:10px;}
+  .panel h2{margin-top:0;color:var(--accent-dark);font-size:1.05rem;text-align:center;}
+  .panel p.note{font-size:0.78rem;color:var(--muted);text-align:center;}
+
+  .mode-row{display:flex;gap:8px;margin-bottom:10px;}
+  .mode-btn{flex:1;padding:12px 8px;border-radius:12px;border:2px solid var(--card-border);background:var(--card-bg);text-align:center;cursor:pointer;font-size:0.8rem;font-weight:700;color:var(--ink);}
+  .mode-btn.selected{border-color:var(--accent);background:rgba(217,130,43,0.14);color:var(--accent-dark);}
+  .mode-btn .d{font-weight:400;color:var(--muted);font-size:0.7rem;display:block;margin-top:3px;}
+
+  .tab-row{display:flex;gap:8px;margin-bottom:12px;}
+  .tab-btn{flex:1;padding:10px;border-radius:12px;border:2px solid var(--card-border);background:var(--card-bg);text-align:center;cursor:pointer;font-weight:700;color:var(--muted);}
+  .tab-btn.selected{border-color:var(--accent);color:var(--accent-dark);background:rgba(217,130,43,0.1);}
+
+  .reg-row{display:flex;gap:6px;margin-bottom:10px;}
+  .reg-row input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--card-border);font-size:0.9rem;background:var(--card-bg);color:var(--ink);text-align:center;}
+  .emoji-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;justify-content:center;}
+  .emoji-pick{width:36px;height:36px;border-radius:9px;border:2px solid var(--card-border);background:var(--card-bg);font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .emoji-pick.selected{border-color:var(--accent);}
+
+  .room-code{font-size:2rem;font-weight:800;letter-spacing:4px;text-align:center;color:var(--accent-dark);background:var(--card-bg);border:2px dashed var(--card-border);border-radius:12px;padding:10px;margin-bottom:10px;}
+  .player-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+  .player-row{display:flex;align-items:center;justify-content:space-between;background:var(--card-bg);border:1px solid var(--card-border);border-radius:10px;padding:8px 10px;font-size:0.88rem;}
+
+  .scoreboard{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:6px 0 8px;}
+  .score-chip{background:var(--panel);border:1px solid var(--card-border);border-radius:999px;padding:4px 9px;font-size:0.72rem;display:flex;align-items:center;gap:5px;box-shadow:0 1px 3px var(--shadow);}
+  .score-chip.active{outline:2px solid var(--accent);}
+  .score-chip.declared{background:rgba(217,130,43,0.14);}
+  .score-chip.me{font-weight:800;}
+  .score-chip .name{font-weight:600;}
+  .score-chip .pts{color:var(--muted);}
+
+  .bone-area{background:var(--panel);border-radius:16px;padding:12px;text-align:center;box-shadow:0 2px 8px var(--shadow);margin-bottom:8px;}
+  .bone-area .label{font-size:0.72rem;color:var(--muted);}
+  .bone-display{font-size:2.2rem;font-weight:800;color:var(--accent-dark);}
+  .bone-display.gold{color:var(--gold-dark);}
+  .bone-points{font-size:0.74rem;color:var(--muted);}
+  .bone-queue{font-size:0.66rem;color:var(--muted);margin-top:2px;}
+
+  .banner{border-radius:16px;padding:16px;text-align:center;font-weight:800;font-size:1.02rem;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 6px 20px var(--shadow);margin-bottom:10px;transform:scale(1);opacity:1;transition:transform .4s ease, opacity .4s ease, padding .4s ease, font-size .4s ease, margin .4s ease;}
+  .banner.shrink{transform:scale(0.4) translateY(-30px);opacity:0;padding:2px;font-size:0.6rem;margin-bottom:0;}
+
+  .log{background:var(--panel);border-radius:12px;padding:6px 10px;font-size:0.72rem;color:var(--muted);min-height:34px;max-height:90px;overflow-y:auto;margin-bottom:8px;box-shadow:0 1px 4px var(--shadow);}
+  .log div{margin:2px 0;}
+
+  .wait-screen{background:var(--panel);border-radius:18px;padding:30px 18px;text-align:center;box-shadow:0 4px 16px var(--shadow);margin-top:14px;}
+  .wait-screen .big-emoji{font-size:2.6rem;margin-bottom:8px;}
+  .wait-screen h2{margin:4px 0 4px;font-size:1.1rem;color:var(--accent-dark);}
+  .wait-screen p{color:var(--muted);font-size:0.82rem;}
+
+  .hand-area{background:var(--panel);border-radius:16px;padding:12px;box-shadow:0 2px 8px var(--shadow);margin-bottom:8px;}
+  .hand-title{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:var(--muted);margin-bottom:6px;}
+  .hand-sum{font-weight:700;color:var(--ink);}
+  .cards-row{display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;padding-bottom:4px;}
+  .card{min-width:52px;width:52px;height:74px;border-radius:9px;background:var(--card-bg);border:2px solid var(--card-border);display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:1.25rem;font-weight:800;color:var(--ink);box-shadow:0 2px 5px var(--shadow);flex-shrink:0;text-align:center;}
+  .card.excluded{opacity:0.4;text-decoration:line-through;}
+  .card.bonus{background:linear-gradient(160deg,var(--card-bg),rgba(217,130,43,0.18));font-size:0.62rem;padding:2px;font-weight:700;}
+
+  .yard-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
+  .yard-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .yard-slot{width:44px;height:62px;border-radius:8px;border:2px dashed var(--card-border);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;background:var(--card-bg);flex-shrink:0;}
+  .yard-slot.filled{border-style:solid;}
+  .yard-slot.empty{color:var(--muted);font-size:1.2rem;}
+
+  .controls{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
+  button{font-family:inherit;border:none;border-radius:10px;padding:10px 14px;font-size:0.85rem;font-weight:700;cursor:pointer;color:#fff;background:var(--accent);box-shadow:0 2px 5px var(--shadow);transition:opacity .15s, transform .1s;}
+  button:active{transform:scale(0.97);}
+  button:disabled{opacity:0.38;cursor:not-allowed;}
+  button.secondary{background:#7a6a55;}
+  button.declare{background:var(--danger);}
+  button.big{width:100%;padding:13px;font-size:0.95rem;}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;}
+  .overlay.hidden{display:none;}
+  .modal{background:var(--panel);border-radius:16px;padding:18px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.4);}
+  .modal h2{margin-top:0;color:var(--accent-dark);text-align:center;font-size:1.1rem;}
+  .modal h3{color:var(--accent-dark);font-size:0.95rem;margin-bottom:2px;}
+  .modal p.note{font-size:0.76rem;color:var(--muted);text-align:center;}
+  .modal .rules-body{font-size:0.82rem;line-height:1.55;}
+  .modal .rules-body p{margin:4px 0 10px;}
+  .reveal-row{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid var(--card-border);font-size:0.82rem;gap:6px;}
+  .reveal-row:last-child{border-bottom:none;}
+  .reveal-row.winner{background:rgba(212,175,55,0.18);border-radius:8px;font-weight:700;}
+  .reveal-row.notplaying{opacity:0.55;}
+  .reveal-hand{display:flex;gap:3px;flex-wrap:wrap;}
+  .reveal-hand span{background:var(--card-bg);border:1px solid var(--card-border);border-radius:6px;padding:2px 6px;font-weight:700;font-size:0.78rem;}
+  .err{color:var(--danger);font-size:0.78rem;text-align:center;margin-top:6px;}
+  .conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-left:5px;}
+  .conn-dot.bad{background:var(--danger);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header><h1>🦴 עד העצם</h1><div class="sub">טוען...</div></header>
+</div>
+<div class="overlay hidden" id="overlay"><div class="modal" id="modal"></div></div>
+
+<!--
+  ============================================================
+  הגדרת Supabase — חובה למלא לפני שהאתר יעבוד!
+  1. גשו ל-https://app.supabase.com וצרו פרויקט (חינמי).
+  2. ב-SQL Editor, הריצו את התוכן של הקובץ SUPABASE_SETUP.sql
+     המצורף (יוצר את הטבלה, ה-RLS ומפעיל Realtime).
+  3. ב-Authentication > Sign In / Providers, הפעילו
+     "Allow anonymous sign-ins".
+  4. ב-Project Settings > API Keys, העתיקו את ה-Project URL
+     ואת מפתח ה-anon/publishable, ומלאו אותם למטה.
+  ============================================================
+-->
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// ======= מלאו כאן את פרטי הפרויקט שלכם מ-Supabase =======
+const SUPABASE_URL = "https://btbqngxgxsvbcocxxdhk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnFuZ3hneHN2YmNvY3h4ZGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNzAwOTUsImV4cCI6MjEwNTY0NjA5NX0.Lf2BYf77Xtkp6zWyuDx8TF9BM9ceEIAG6IFVw3Viso8";
+// ==========================================================
+
+var supabase = null, myUid = null, roomChannel = null, roomCode = null;
+var configOk = SUPABASE_URL && SUPABASE_URL.indexOf("https://") === 0 && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 20;
+
+if(configOk){
+  supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+(function(){
+"use strict";
+
+// ================= THEME =================
+function loadTheme(){ try{ var t=localStorage.getItem('adhaetzem_online_theme'); if(t) document.documentElement.setAttribute('data-theme',t);}catch(e){} }
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var next= cur==='dark'?'light':(cur==='light'?'':(window.matchMedia('(prefers-color-scheme: dark)').matches?'light':'dark'));
+  if(next) document.documentElement.setAttribute('data-theme',next); else document.documentElement.removeAttribute('data-theme');
+  try{ localStorage.setItem('adhaetzem_online_theme', next); }catch(e){}
+}
+loadTheme();
+
+// ================= GAME CONSTANTS (identical rules to the offline version) =================
+var EMOJIS = ["🙂","🐱","🐶","🦊","🐵","🐸","🦁","🐧","🐼","🦄","🐝","🐢"];
+var SPECIALS = {
+  pm:   {label:"פלוס/מינוס", icon:"➕➖", desc:"הופך את הסימן של קלף מספר אחד ביד שלך."},
+  trash:{label:"הזבלן", icon:"🗑️", desc:"מחליף את עצמו באחד משלושת הקלפים העליונים בערימת הפסולת."},
+  fairy:{label:"הפיה", icon:"🧚", desc:"מוציא קלף אחד מהיד מהסכום."},
+  copy: {label:"המתחזה", icon:"🎭", desc:"מקבל את הערך של קלף אחר שביד שלך."}
+};
+var NUM_COPIES=4, SPECIAL_COPIES=2, WHITE_BONE_COUNT=6, GOLD_BONE_COUNT=3, MAX_YARD=3, MAX_TURNS_PER_ROUND=20;
+var BANNER_HOLD_MS=1500, BANNER_SHRINK_MS=420;
+
+function buildDeck(){
+  var deck=[];
+  for(var n=1;n<=9;n++) for(var c=0;c<NUM_COPIES;c++) deck.push({type:'num',value:n,sign:1,excluded:false});
+  Object.keys(SPECIALS).forEach(function(key){ for(var c=0;c<SPECIAL_COPIES;c++) deck.push({type:'special',key:key}); });
+  for(var i=deck.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=deck[i]; deck[i]=deck[j]; deck[j]=t; }
+  return deck;
+}
+function randRange(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+function buildBones(){
+  var white=[]; for(var i=0;i<WHITE_BONE_COUNT;i++) white.push({value:randRange(9,22),gold:false,points:1});
+  var gold=[]; for(var i2=0;i2<GOLD_BONE_COUNT;i2++) gold.push({value:randRange(12,26),gold:true,points:2});
+  for(var k=white.length-1;k>0;k--){ var j2=Math.floor(Math.random()*(k+1)); var t2=white[k]; white[k]=white[j2]; white[j2]=t2; }
+  for(var k2=gold.length-1;k2>0;k2--){ var j3=Math.floor(Math.random()*(k2+1)); var t3=gold[k2]; gold[k2]=gold[j3]; gold[j3]=t3; }
+  return {white:white, gold:gold};
+}
+function cardValue(c){ if(c.type!=='num'||c.excluded) return 0; return c.value*(c.sign||1); }
+function handSum(hand){ return (hand||[]).reduce(function(s,c){return s+cardValue(c);},0); }
+function cardLabel(c){ if(c.type==='num') return (c.sign<0?'-':'')+c.value; return SPECIALS[c.key].icon; }
+function roomCodeGen(){
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var s=''; for(var i=0;i<5;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+// ================= LOCAL UI / NETWORK STATE =================
+var ui = { screen: 'loading', mode:'yard', name:'', emoji: EMOJIS[0], roomCode:'', error:'' };
+var room = null;         // last known copy of the shared game state (the jsonb "state" column)
+var lastSeenMoveTs = 0;  // to detect a NEW move worth banner-animating
+var bannerState = null;  // {msg, stage}
+
+var app = document.getElementById('app');
+
+// ================= AUTH BOOTSTRAP =================
+function boot(){
+  if(!configOk){ ui.screen='config-missing'; render(); return; }
+  supabase.auth.onAuthStateChange(function(event, session){
+    if(session && session.user){ myUid = session.user.id; ui.screen='entry'; render(); }
+  });
+  supabase.auth.getSession().then(function(res){
+    if(res.data && res.data.session){ myUid = res.data.session.user.id; ui.screen='entry'; render(); return; }
+    supabase.auth.signInAnonymously().then(function(res2){
+      if(res2.error){ ui.screen='config-missing'; ui.error='שגיאת התחברות: '+res2.error.message; render(); return; }
+      myUid = res2.data.user.id; ui.screen='entry'; render();
+    });
+  });
+}
+boot();
+
+// ================= SUPABASE HELPERS =================
+function fetchRoomState(code){
+  return supabase.from('games').select('state').eq('code', code).single().then(function(res){
+    if(res.error || !res.data) return null;
+    return res.data.state;
+  });
+}
+
+function subscribeRoom(code){
+  roomCode = code;
+  if(roomChannel) supabase.removeChannel(roomChannel);
+  roomChannel = supabase.channel('room-'+code)
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'games', filter:'code=eq.'+code }, function(payload){
+      room = payload.new.state;
+      handleIncomingRoom();
+    })
+    .subscribe();
+}
+
+// Safe concurrent mutation: re-reads the freshest row + version right before
+// writing (never trusts the possibly-stale local `room`), applies mutateFn,
+// and writes back only if the version hasn't changed meanwhile - retrying a
+// few times on conflict. Use this for anything more than one player could
+// plausibly do at nearly the same moment (gold-round choices, yard saving,
+// advancing past a shared result screen, and turn actions).
+function transactRoom(mutateFn, retriesLeft){
+  if(retriesLeft===undefined) retriesLeft = 6;
+  return supabase.from('games').select('state, version').eq('code', roomCode).single().then(function(res){
+    if(res.error || !res.data) return;
+    var r = res.data.state;
+    var expectedVersion = res.data.version;
+    var keepGoing = mutateFn(r);
+    if(keepGoing===false) return; // mutateFn can abort (e.g. already handled by someone else)
+    return supabase.from('games')
+      .update({ state:r, version: expectedVersion+1, updated_at: new Date().toISOString() })
+      .eq('code', roomCode).eq('version', expectedVersion)
+      .select();
+  }).then(function(res){
+    if(!res) return; // aborted or errored above
+    if(res.error) return;
+    if(!res.data || res.data.length===0){
+      if(retriesLeft<=0) return;
+      return transactRoom(mutateFn, retriesLeft-1);
+    }
+    // Realtime UPDATE event will normally deliver this back to us too, but
+    // update our local copy immediately for a snappier local UI.
+    room = res.data[0].state;
+    handleIncomingRoom();
+  });
+}
+
+// ================= HANDLE INCOMING SNAPSHOT =================
+function handleIncomingRoom(){
+  if(room.status==='lobby'){ ui.screen='lobby'; render(); return; }
+  if(room.status==='over'){ ui.screen='game'; render(); return; }
+  // status === 'playing'
+  ui.screen='game';
+  var lm = room.lastMove;
+  if(lm && lm.ts && lm.ts > lastSeenMoveTs){
+    lastSeenMoveTs = lm.ts;
+    bannerState = {msg: lm.msg, stage:'pop'};
+    render();
+    setTimeout(function(){
+      if(bannerState){ bannerState.stage='shrink'; render(); }
+      setTimeout(function(){ bannerState=null; render(); }, BANNER_SHRINK_MS);
+    }, BANNER_HOLD_MS);
+    return;
+  }
+  render();
+}
+
+function me(){ if(!room) return null; return room.players.find(function(p){return p.uid===myUid;}); }
+function currentTurnPlayer(){ if(!room || !room.turnOrder || !room.roundActive) return null; return room.players.find(function(p){return p.uid===room.turnOrder[room.turnPos];}); }
+function isMyTurn(){ var cp=currentTurnPlayer(); return cp && cp.uid===myUid; }
+
+// ================= RENDER ROOT =================
+function render(){
+  if(ui.screen==='loading') renderLoading();
+  else if(ui.screen==='config-missing') renderConfigMissing();
+  else if(ui.screen==='entry') renderEntry();
+  else if(ui.screen==='lobby') renderLobby();
+  else if(ui.screen==='game') renderGame();
+}
+
+function renderLoading(){
+  app.innerHTML = '<header><h1>🦴 עד העצם</h1><div class="sub">מתחבר...</div></header>';
+}
+
+function renderConfigMissing(){
+  app.innerHTML = '<header><h1>🦴 עד העצם</h1></header>'+
+    '<div class="panel"><h2>⚠️ חסרה הגדרת Supabase</h2>'+
+    '<p class="note">כדי שהאתר יעבוד צריך למלא את SUPABASE_URL ו-SUPABASE_ANON_KEY בתוך קובץ index.html (ראו ההערה למעלה בקובץ), ולוודא שהטבלה, ה-Realtime וההתחברות האנונימית מופעלים בפרויקט Supabase.</p>'+
+    (ui.error ? '<p class="err">'+ui.error+'</p>' : '')+
+    '</div>';
+}
+
+// ================= ENTRY SCREEN =================
+function renderEntry(){
+  var html = ''+
+  '<header>'+
+    '<button class="icon-btn right" id="infoBtn" title="חוקי המשחק">ℹ️</button>'+
+    '<button class="icon-btn left" id="themeBtn" title="החלף מצב תצוגה">🌗</button>'+
+    '<h1>🦴 עד העצם</h1>'+
+    '<div class="sub">גרסה אונליין — כל אחד מהטלפון שלו</div>'+
+  '</header>'+
+  '<div class="panel">'+
+    '<h2>הפרטים שלך</h2>'+
+    '<div class="emoji-row" id="emojiRow"></div>'+
+    '<div class="reg-row"><input id="nameInput" placeholder="השם שלך..." maxlength="14" value="'+(ui.name||'')+'"></div>'+
+  '</div>'+
+  '<div class="panel">'+
+    '<div class="tab-row">'+
+      '<div class="tab-btn'+(ui.tab!=='join'?' selected':'')+'" id="tabCreate">➕ צור חדר חדש</div>'+
+      '<div class="tab-btn'+(ui.tab==='join'?' selected':'')+'" id="tabJoin">🔑 הצטרף לחדר</div>'+
+    '</div>';
+
+  if(ui.tab==='join'){
+    html += '<div class="reg-row"><input id="codeInput" placeholder="קוד חדר" maxlength="5" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;" value="'+(ui.roomCode||'')+'"></div>'+
+      '<button class="big" id="joinBtn">🔑 הצטרף</button>';
+  } else {
+    html += '<h2 style="margin-top:10px;">בחר גרסה</h2>'+
+      '<div class="mode-row">'+
+        '<div class="mode-btn'+(ui.mode==='basic'?' selected':'')+'" id="modeBasic">בסיסי<span class="d">בלי חצר, בלי עצם זהב</span></div>'+
+        '<div class="mode-btn'+(ui.mode==='yard'?' selected':'')+'" id="modeYard">עם חצר<span class="d">כולל חצר וסיבוב עצם הזהב</span></div>'+
+      '</div>'+
+      '<button class="big" id="createBtn">➕ צור חדר חדש</button>';
+  }
+  html += (ui.error?'<p class="err">'+ui.error+'</p>':'') +
+  '</div>';
+  app.innerHTML = html;
+
+  document.getElementById('infoBtn').addEventListener('click', showRulesInfo);
+  document.getElementById('themeBtn').addEventListener('click', function(){ toggleTheme(); render(); });
+  document.getElementById('tabCreate').addEventListener('click', function(){ ui.tab='create'; render(); });
+  document.getElementById('tabJoin').addEventListener('click', function(){ ui.tab='join'; render(); });
+
+  var emojiRow = document.getElementById('emojiRow');
+  EMOJIS.forEach(function(e){
+    var b=document.createElement('div');
+    b.className='emoji-pick'+(e===ui.emoji?' selected':'');
+    b.textContent=e;
+    b.addEventListener('click', function(){ ui.emoji=e; render(); });
+    emojiRow.appendChild(b);
+  });
+
+  document.getElementById('nameInput').addEventListener('input', function(e){ ui.name = e.target.value; });
+
+  if(ui.tab==='join'){
+    document.getElementById('codeInput').addEventListener('input', function(e){ ui.roomCode = e.target.value.toUpperCase(); });
+    document.getElementById('joinBtn').addEventListener('click', joinRoom);
+  } else {
+    document.getElementById('modeBasic').addEventListener('click', function(){ ui.mode='basic'; render(); });
+    document.getElementById('modeYard').addEventListener('click', function(){ ui.mode='yard'; render(); });
+    document.getElementById('createBtn').addEventListener('click', createRoom);
+  }
+}
+
+function showRulesInfo(){
+  var html = '<h2>🦴 חוקי המשחק — עד העצם</h2><div class="rules-body">'+
+  '<h3>🎯 מטרה</h3><p>לצבור כמה שיותר עצמות. עצם לבנה שווה נקודה אחת, עצם זהב שווה שתי נקודות.</p>'+
+  '<h3>🧩 התחלה</h3><p>כל שחקן מתחיל עם 2 עצמות בבנק האישי. עצמות נחשפות אחת בכל סיבוב עם מספר מוסתר מראש.</p>'+
+  '<h3>🦴 מטרת כל סיבוב</h3><p>להגיע עם סכום הקלפים הכי קרוב למספר שעל העצם — בלי לעבור אותו.</p>'+
+  '<h3>🔄 בכל תור</h3><p>פעולה אחת בלבד: למשוך קלף, להחליף קלף, או להשתמש בקלף מיוחד. כל קלף שנשאר ביד בסוף נספר.</p>'+
+  '<h3>📢 עד העצם</h3><p>הכרזה מסכנת עצם אחת ונותנת לכולם תור אחרון. הקרוב ביותר בלי לעבור מנצח (שוויון = קלף גבוה יותר) ולוקח את העצם + עצם מכל מכריז אחר.</p>'+
+  '<h3>🏡 חצר ועצם זהב (בגרסה עם חצר)</h3><p>מי שלא ניצח יכול לשמור קלף אחד בחצר (עד 3). אחרי כל העצמות הלבנות נחשפות 3 עצמות זהב שמשחקים עליהן רק עם קלפי החצר.</p>'+
+  '<h3>🃏 קלפים מיוחדים</h3><p>➕➖ פלוס/מינוס, 🗑️ הזבלן, 🧚 הפיה, 🎭 המתחזה — ראו תיאור בקלף עצמו במשחק.</p>'+
+  '<h3>🌐 אונליין</h3><p>כל שחקן משחק מהמכשיר שלו. היד שלך מוצגת לך בלבד; כשזה לא תורך תראו מסך המתנה.</p>'+
+  '</div><div class="controls" style="margin-top:12px;"><button class="big" id="closeInfoBtn">סגור</button></div>';
+  showModal(html);
+  document.getElementById('closeInfoBtn').addEventListener('click', hideModal);
+}
+
+// ================= CREATE / JOIN =================
+function createRoom(){
+  var name = (ui.name||'').trim();
+  if(!name){ ui.error='נא להזין שם'; render(); return; }
+  ui.error='';
+  var code = roomCodeGen();
+  var bones = buildBones();
+  var initial = {
+    status:'lobby',
+    mode: ui.mode,
+    hostUid: myUid,
+    players: [{uid:myUid, name:name, emoji:ui.emoji, score:2, hand:[], yard:[null,null,null], declared:false}],
+    deck: [], discard: [],
+    whiteBones: bones.white, goldBones: bones.gold,
+    phase:'white', currentBone:null,
+    turnOrder:[], turnPos:0, turnCountThisRound:0,
+    declaredIds:[], finalTurnsRemaining:-1, roundActive:false,
+    log:[], lastMove:null
+  };
+  supabase.from('games').insert({ code:code, state:initial, version:0 }).then(function(res){
+    if(res.error){ ui.error='שגיאה ביצירת חדר: '+res.error.message; render(); return; }
+    ui.roomCode = code;
+    room = initial;
+    subscribeRoom(code);
+    ui.screen='lobby'; render();
+  });
+}
+
+function joinRoom(retriesLeft){
+  if(retriesLeft===undefined) retriesLeft = 6;
+  var name = (ui.name||'').trim();
+  var code = (ui.roomCode||'').trim().toUpperCase();
+  if(!name){ ui.error='נא להזין שם'; render(); return; }
+  if(code.length<4){ ui.error='נא להזין קוד חדר תקין'; render(); return; }
+  ui.error='';
+  supabase.from('games').select('state, version').eq('code', code).single().then(function(res){
+    if(res.error || !res.data){ ui.error='חדר לא נמצא'; render(); return; }
+    var data = res.data.state;
+    var expectedVersion = res.data.version;
+    if(data.status!=='lobby'){ ui.error='המשחק בחדר הזה כבר התחיל'; render(); return; }
+    var already = data.players.some(function(p){return p.uid===myUid;});
+    if(!already){
+      if(data.players.length>=8){ ui.error='החדר מלא'; render(); return; }
+      var usedEmojis = data.players.map(function(p){return p.emoji;});
+      var emoji = usedEmojis.indexOf(ui.emoji)>=0 ? (EMOJIS.find(function(e){return usedEmojis.indexOf(e)<0;}) || ui.emoji) : ui.emoji;
+      data.players.push({uid:myUid, name:name, emoji:emoji, score:2, hand:[], yard:[null,null,null], declared:false});
+    }
+    supabase.from('games').update({ state:data, version:expectedVersion+1, updated_at:new Date().toISOString() })
+      .eq('code', code).eq('version', expectedVersion).select()
+      .then(function(res2){
+        if(res2.error){ ui.error='שגיאה בהצטרפות: '+res2.error.message; render(); return; }
+        if(!res2.data || res2.data.length===0){
+          if(retriesLeft<=0){ ui.error='שגיאה בהצטרפות, נסה שוב'; render(); return; }
+          return joinRoom(retriesLeft-1);
+        }
+        room = res2.data[0].state;
+        subscribeRoom(code);
+        ui.screen='lobby'; render();
+      });
+  });
+}
+
+// ================= LOBBY =================
+function renderLobby(){
+  var isHost = room.hostUid===myUid;
+  var html = '<header><h1>🦴 עד העצם</h1><div class="sub">חדר המתנה</div></header>'+
+    '<div class="panel">'+
+      '<div class="room-code">'+ (roomCode||'') +'</div>'+
+      '<p class="note">שתפו את הקוד הזה עם שאר השחקנים כדי שיצטרפו</p>'+
+      '<p class="note">גרסה: '+(room.mode==='yard'?'עם חצר':'בסיסי')+'</p>'+
+      '<div class="player-list" id="pList"></div>'+
+      (isHost
+        ? '<button class="big" id="startBtn" '+(room.players.length<2?'disabled':'')+'>🦴 התחל משחק ('+room.players.length+' שחקנים)</button>'
+        : '<p class="note">ממתינים שמארח החדר ('+(room.players.find(function(p){return p.uid===room.hostUid;})||{}).name+') יתחיל את המשחק...</p>')
+    +'</div>';
+  app.innerHTML = html;
+  var pList = document.getElementById('pList');
+  room.players.forEach(function(p){
+    var row = document.createElement('div'); row.className='player-row';
+    row.innerHTML = '<span>'+p.emoji+' '+p.name+(p.uid===room.hostUid?' 👑':'')+(p.uid===myUid?' (אתה)':'')+'</span>';
+    pList.appendChild(row);
+  });
+  if(isHost){
+    var startBtn = document.getElementById('startBtn');
+    if(startBtn) startBtn.addEventListener('click', hostStartGame);
+  }
+}
+
+function hostStartGame(){
+  transactRoom(function(r){
+    r.status='playing';
+    r.deck = buildDeck();
+    r.players = r.players.map(function(p){ return Object.assign({}, p, {hand:[], yard:[null,null,null], declared:false, score:2}); });
+    r.turnOrder = r.players.map(function(p){return p.uid;});
+    r.turnPos=0; r.turnCountThisRound=0;
+    r.declaredIds=[]; r.finalTurnsRemaining=-1;
+    r.log=[]; r.lastMove=null;
+    startWhiteRoundOn(r);
+  });
+}
+
+// ================= ROUND LIFECYCLE (mutate a plain object, then push) =================
+function drawFromDeckOn(r){
+  if(r.deck.length===0){
+    if(r.discard.length===0) return {type:'num',value:5,sign:1,excluded:false};
+    r.deck = r.discard.splice(0, r.discard.length);
+    for(var i=r.deck.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=r.deck[i]; r.deck[i]=r.deck[j]; r.deck[j]=t; }
+    addLogOn(r, "הקופה נגמרה — ערימת הפסולת עורבבה מחדש.");
+  }
+  return r.deck.pop();
+}
+function discardOn(r,c){ r.discard.push(c); }
+function addLogOn(r, msg){ r.log.push(msg); if(r.log.length>60) r.log.shift(); }
+
+function startWhiteRoundOn(r){
+  if(r.whiteBones.length===0){
+    if(r.mode==='yard'){ startGoldPhaseOn(r); return; }
+    r.status='over'; r.phase='over'; r.roundActive=false; return;
+  }
+  r.currentBone = r.whiteBones.shift();
+  r.players.forEach(function(p){ p.hand=[drawFromDeckOn(r), drawFromDeckOn(r)]; p.declared=false; });
+  r.declaredIds=[]; r.finalTurnsRemaining=-1; r.turnPos=0; r.turnCountThisRound=0; r.roundActive=true;
+  addLogOn(r, "🦴 עצם חדשה נחשפת: "+r.currentBone.value);
+}
+
+function startGoldPhaseOn(r){
+  if(r.goldBones.length===0){ r.status='over'; r.phase='over'; r.roundActive=false; return; }
+  r.phase='gold';
+  r.currentBone = r.goldBones.shift();
+  r.players.forEach(function(p){ p.hand=[]; p.declared=false; });
+  r.declaredIds=[]; r.roundActive=true;
+  addLogOn(r, "🥇 עצם הזהב נחשפת: "+r.currentBone.value+" — משתמשים רק בקלפים מהחצר!");
+  r._awaitingGoldChoices = r.players.filter(function(p){ return p.yard.some(function(c){return c;}) && p.score>=1; }).map(function(p){return p.uid;});
+  if(r._awaitingGoldChoices.length===0){ resolveGoldRoundOn(r); }
+}
+
+// ================= TURN ACTIONS (called by the acting client) =================
+function submitAction(mutateFn, moveMsg){
+  transactRoom(function(r){
+    mutateFn(r);
+    advanceTurnOn(r);
+    r.lastMove = {msg: moveMsg, ts: Date.now()};
+  });
+}
+
+function advanceTurnOn(r){
+  r.turnCountThisRound++;
+  if(r.finalTurnsRemaining>=0){
+    r.finalTurnsRemaining--;
+    if(r.finalTurnsRemaining<=0){ resolveWhiteRoundOn(r); return; }
+  }
+  if(r.turnCountThisRound>MAX_TURNS_PER_ROUND){
+    addLogOn(r, "הסיבוב התארך — עוברים ישר לחשיפה.");
+    if(r.declaredIds.length===0){
+      r.players.forEach(function(p){ if(p.score>=1){ p.declared=true; r.declaredIds.push(p.uid); } });
+    }
+    resolveWhiteRoundOn(r); return;
+  }
+  r.turnPos = (r.turnPos+1) % r.turnOrder.length;
+}
+
+function declareOn(r, p){
+  if(p.declared || p.score<1) return false;
+  p.declared=true; r.declaredIds.push(p.uid);
+  if(r.finalTurnsRemaining<0) r.finalTurnsRemaining = r.players.length;
+  return true;
+}
+
+function doDraw(){
+  var meP = me();
+  submitAction(function(r){
+    var p = r.players.find(function(x){return x.uid===myUid;});
+    var card = drawFromDeckOn(r);
+    p.hand.push(card);
+  }, '🎴 '+meP.emoji+' '+meP.name+' משך/ה קלף');
+}
+
+function doReplace(handIdx){
+  var meP = me();
+  submitAction(function(r){
+    var p = r.players.find(function(x){return x.uid===myUid;});
+    var old = p.hand[handIdx];
+    discardOn(r, old);
+    var drawn = drawFromDeckOn(r);
+    p.hand[handIdx]=drawn;
+  }, '🔁 '+meP.emoji+' '+meP.name+' החליף/ה קלף');
+}
+
+function doDeclare(){
+  var meP = me();
+  transactRoom(function(r){
+    var p = r.players.find(function(x){return x.uid===myUid;});
+    if(!declareOn(r,p)) return false;
+    advanceTurnOn(r);
+    r.lastMove = {msg:'📣 '+meP.emoji+' '+meP.name+' הכריז/ה: עד העצם!', ts:Date.now()};
+  });
+}
+
+function doSpecial(handIdx, extra){
+  var meP = me();
+  var card = me().hand[handIdx];
+  var msgMap = { pm:'➕➖ הפך/הפכה סימן קלף', trash:'🗑️ השתמש/ה בזבלן', fairy:'🧚 הוציא/ה קלף מהסכום', copy:'🎭 השתמש/ה במתחזה' };
+  submitAction(function(r){
+    var p = r.players.find(function(x){return x.uid===myUid;});
+    var c = p.hand[handIdx];
+    if(c.key==='pm'){
+      if(extra!=null){ p.hand[extra].sign = -p.hand[extra].sign; }
+      p.hand.splice(handIdx,1); discardOn(r,c);
+    } else if(c.key==='trash'){
+      if(extra!=null){
+        var top3 = r.discard.slice(-3);
+        var chosen = top3[extra];
+        var realIdx = r.discard.lastIndexOf(chosen);
+        r.discard.splice(realIdx,1);
+        p.hand.splice(handIdx,1,chosen);
+      } else { p.hand.splice(handIdx,1); }
+      discardOn(r,c);
+    } else if(c.key==='fairy'){
+      if(extra!=null){ p.hand[extra].excluded=true; }
+      p.hand.splice(handIdx,1); discardOn(r,c);
+    } else if(c.key==='copy'){
+      if(extra!=null){ var src=p.hand[extra]; p.hand[handIdx]={type:'num',value:src.value,sign:src.sign,excluded:false}; }
+      else { p.hand.splice(handIdx,1); discardOn(r,c); }
+    }
+  }, meP.emoji+' '+meP.name+' '+msgMap[card.key]);
+}
+
+// ================= ROUND RESOLUTION (computed by acting client, then pushed & rendered by all) =================
+function resolveWhiteRoundOn(r){
+  r.roundActive=false;
+  var target = r.currentBone.value;
+  var declared = r.players.filter(function(p){return r.declaredIds.indexOf(p.uid)>=0;});
+  var resultInfo;
+  if(declared.length===0){
+    addLogOn(r, "אף אחד לא הכריז — העצם נזרקת בלי זוכה.");
+    resultInfo = {target:target, noWinner:true, results:[], winnerUid:null};
+  } else {
+    var results = declared.map(function(p){
+      var sum=handSum(p.hand);
+      var maxCard = p.hand.reduce(function(m,c){return c.type==='num'?Math.max(m,cardValue(c)):m;}, -Infinity);
+      return {uid:p.uid, sum:sum, over:sum>target, diff:Math.abs(target-sum), maxCard: maxCard===-Infinity?-999:maxCard};
+    });
+    var underOrEq = results.filter(function(x){return !x.over;});
+    var pool = underOrEq.length ? underOrEq : results;
+    pool.sort(function(a,b){return a.diff-b.diff;});
+    var bestDiff = pool[0].diff;
+    var tied = pool.filter(function(x){return x.diff===bestDiff;});
+    var winner;
+    if(tied.length>1){ tied.sort(function(a,b){return b.maxCard-a.maxCard;}); winner=tied[0]; } else winner=pool[0];
+    r.players.forEach(function(p){
+      if(r.declaredIds.indexOf(p.uid)>=0 && p.uid!==winner.uid){ p.score=Math.max(0,p.score-1); }
+    });
+    var winP = r.players.find(function(p){return p.uid===winner.uid;});
+    winP.score += (declared.length-1) + r.currentBone.points;
+    addLogOn(r, "🏆 "+winP.name+" לוקח/ת את העצם ("+target+")!");
+    resultInfo = {target:target, noWinner:false, results:results, winnerUid:winner.uid};
+  }
+  r.pendingRoundResult = resultInfo;
+  r.pendingYardTurn = null; // will be set once players start saving to yard
+}
+
+function resolveGoldRoundOn(r){
+  var target = r.currentBone.value;
+  var declared = r.players.filter(function(p){return r.declaredIds.indexOf(p.uid)>=0;});
+  var resultInfo;
+  if(declared.length===0){
+    addLogOn(r, "אף אחד לא התחרה על עצם הזהב.");
+    resultInfo = {target:target, gold:true, noWinner:true, results:[], winnerUid:null};
+  } else {
+    var results = declared.map(function(p){
+      var idxs = p._goldChosenIdx||[];
+      var cards = idxs.map(function(i){return p.yard[i];}).filter(function(c){return c;});
+      var sum = cards.reduce(function(s,c){return s+cardValue(c);},0);
+      var maxCard = cards.reduce(function(m,c){return Math.max(m,cardValue(c));}, -Infinity);
+      return {uid:p.uid, idxs:idxs, cards:cards, sum:sum, over:sum>target, diff:Math.abs(target-sum), maxCard:maxCard===-Infinity?-999:maxCard};
+    });
+    var underOrEq = results.filter(function(x){return !x.over;});
+    var pool = underOrEq.length ? underOrEq : results;
+    pool.sort(function(a,b){return a.diff-b.diff;});
+    var bestDiff = pool[0].diff;
+    var tied = pool.filter(function(x){return x.diff===bestDiff;});
+    var winner;
+    if(tied.length>1){ tied.sort(function(a,b){return b.maxCard-a.maxCard;}); winner=tied[0]; } else winner=pool[0];
+    r.players.forEach(function(p){
+      if(r.declaredIds.indexOf(p.uid)>=0 && p.uid!==winner.uid){ p.score=Math.max(0,p.score-1); }
+    });
+    var winP = r.players.find(function(p){return p.uid===winner.uid;});
+    winP.score += (declared.length-1) + r.currentBone.points;
+    results.forEach(function(res){
+      var pl = r.players.find(function(p){return p.uid===res.uid;});
+      res.idxs.forEach(function(i){ discardOn(r, pl.yard[i]); pl.yard[i]=null; });
+    });
+    addLogOn(r, "🏆 "+winP.name+" זוכה בעצם הזהב ("+target+")!");
+    resultInfo = {target:target, gold:true, noWinner:false, results:results, winnerUid:winner.uid};
+  }
+  r.pendingRoundResult = resultInfo;
+  r._awaitingGoldChoices = [];
+}
+
+// ================= GAME SCREEN RENDER =================
+function renderGame(){
+  var meP = me();
+  if(!meP){ app.innerHTML='<div class="panel"><p class="err">שגיאה: לא נמצאת ברשימת השחקנים.</p></div>'; return; }
+
+  var html = '<header><h1>🦴 עד העצם</h1></header>' + renderScoreboardHtml() + renderBoneHtml();
+
+  if(bannerState){
+    html += '<div class="banner'+(bannerState.stage==='shrink'?' shrink':'')+'">'+bannerState.msg+'</div>';
+  }
+  html += '<div class="log" id="logBox"></div>';
+
+  if(room.status==='over'){
+    html += renderFinalScoresHtml();
+    app.innerHTML = html;
+    return;
+  }
+
+  // pending round result waiting for interaction (yard-saving / gold choice) is handled via modal triggers below
+  var iAmTurn = isMyTurn();
+  var cp = currentTurnPlayer();
+
+  if(bannerState){
+    app.innerHTML = html;
+    var lb = document.getElementById('logBox'); lb.innerHTML = (room.log||[]).slice(-8).map(function(m){return '<div>'+m+'</div>';}).join(''); lb.scrollTop=lb.scrollHeight;
+    return;
+  }
+
+  // If a round just resolved and needs post-processing, show the reveal modal (all clients see it identically from shared state)
+  if(room.pendingRoundResult && !ui._resultModalShownFor){
+    ui._resultModalShownFor = JSON.stringify(room.pendingRoundResult)+ (room.phase||'');
+    setTimeout(function(){ showRoundResultModal(room.pendingRoundResult); }, 30);
+  } else if(!room.pendingRoundResult){
+    ui._resultModalShownFor = null;
+  }
+
+  if(room.roundActive && !room.pendingRoundResult){
+    if(!iAmTurn){
+      html += '<div class="wait-screen"><div class="big-emoji">'+(cp?cp.emoji:'⏳')+'</div>'+
+        '<h2>ממתינים ל'+(cp?cp.name:'...')+'</h2><p>זה לא התור שלך כרגע.</p></div>';
+    } else {
+      html += '<div class="hand-area">'+
+        '<div class="hand-title"><span>'+meP.emoji+' התור שלך</span><span class="hand-sum">סכום: '+handSum(meP.hand)+'</span></div>'+
+        '<div class="cards-row" id="handCards"></div>';
+      if(room.mode==='yard') html += '<div class="yard-row" id="yardRow"><span class="yard-label">🏡 החצר שלי:</span></div>';
+      html += '<div class="controls" id="mainControls"></div></div>';
+    }
+  } else if(room.phase==='gold' && room._awaitingGoldChoices && room._awaitingGoldChoices.indexOf(myUid)>=0 && !room.pendingRoundResult){
+    html += '<div class="wait-screen"><div class="big-emoji">🥇</div><h2>סיבוב עצם הזהב</h2><p>הכריעו אם להתחרות בעזרת קלפי החצר שלכם.</p>'+
+      '<div class="controls" style="margin-top:12px;justify-content:center;"><button class="big" id="goldChoiceBtn">בחר/י קלפים</button></div></div>';
+  } else if(room.phase==='gold' && !room.pendingRoundResult){
+    html += '<div class="wait-screen"><div class="big-emoji">⏳</div><h2>ממתינים לשאר השחקנים</h2><p>סיבוב עצם הזהב מתקיים כרגע.</p></div>';
+  }
+
+  app.innerHTML = html;
+  var lb = document.getElementById('logBox'); lb.innerHTML = (room.log||[]).slice(-8).map(function(m){return '<div>'+m+'</div>';}).join(''); lb.scrollTop=lb.scrollHeight;
+
+  if(room.roundActive && iAmTurn && !room.pendingRoundResult){
+    var handEl = document.getElementById('handCards');
+    meP.hand.forEach(function(c){
+      var div=document.createElement('div');
+      div.className='card'+(c.type==='special'?' bonus':'')+(c.excluded?' excluded':'');
+      div.innerHTML = c.type==='num'?cardLabel(c):(SPECIALS[c.key].icon+'<br><span style="font-size:0.55rem;">'+SPECIALS[c.key].label+'</span>');
+      handEl.appendChild(div);
+    });
+    if(room.mode==='yard'){
+      var yardEl = document.getElementById('yardRow');
+      meP.yard.forEach(function(c){
+        var slot=document.createElement('div'); slot.className='yard-slot'+(c?' filled':' empty'); slot.textContent = c?cardLabel(c):'·';
+        yardEl.appendChild(slot);
+      });
+    }
+    var ctrl = document.getElementById('mainControls');
+    var drawBtn=document.createElement('button'); drawBtn.textContent='🎴 משוך קלף'; drawBtn.addEventListener('click', doDraw); ctrl.appendChild(drawBtn);
+    var repBtn=document.createElement('button'); repBtn.className='secondary'; repBtn.textContent='🔁 החלף קלף'; repBtn.disabled=meP.hand.length===0;
+    repBtn.addEventListener('click', humanReplaceStart); ctrl.appendChild(repBtn);
+    if(meP.hand.some(function(c){return c.type==='special';})){
+      var spBtn=document.createElement('button'); spBtn.className='secondary'; spBtn.textContent='✨ קלף מיוחד';
+      spBtn.addEventListener('click', humanSpecialStart); ctrl.appendChild(spBtn);
+    }
+    var decBtn=document.createElement('button'); decBtn.className='declare'; decBtn.textContent='📣 עד העצם!';
+    decBtn.disabled = meP.declared || meP.score<1;
+    decBtn.addEventListener('click', doDeclare); ctrl.appendChild(decBtn);
+  }
+
+  if(room.phase==='gold' && room._awaitingGoldChoices && room._awaitingGoldChoices.indexOf(myUid)>=0 && !room.pendingRoundResult){
+    var gb = document.getElementById('goldChoiceBtn');
+    if(gb) gb.addEventListener('click', function(){ promptGoldChoice(meP); });
+  }
+}
+
+function renderScoreboardHtml(){
+  var cp = (room && room.roundActive) ? currentTurnPlayer() : null;
+  var html = '<div class="scoreboard">';
+  (room.players||[]).forEach(function(p){
+    html += '<div class="score-chip'+(cp&&cp.uid===p.uid?' active':'')+(p.declared?' declared':'')+(p.uid===myUid?' me':'')+'">'+
+      '<span class="name">'+p.emoji+' '+p.name+(p.declared?' 📣':'')+'</span><span class="pts">'+p.score+'</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+function renderBoneHtml(){
+  if(!room.currentBone || room.status==='over') return '<div class="bone-area"><div class="label">אין עצם פעילה</div></div>';
+  var isGold = room.currentBone.gold;
+  var qtxt = room.phase==='white'
+    ? ('עצמות לבנות שנותרו: '+room.whiteBones.length + (room.mode==='yard' ? (' · עצמות זהב: '+room.goldBones.length) : ''))
+    : ('שלב עצמות הזהב · נותרו: '+room.goldBones.length);
+  return '<div class="bone-area">'+
+    '<div class="label">העצם על השולחן</div>'+
+    '<div class="bone-display'+(isGold?' gold':'')+'">'+(isGold?'🥇 ':'🦴 ')+room.currentBone.value+'</div>'+
+    '<div class="bone-points">'+(isGold?'עצם זהב · שווה 2 נקודות':'שווה נקודה אחת')+'</div>'+
+    '<div class="bone-queue">'+qtxt+'</div></div>';
+}
+function renderFinalScoresHtml(){
+  var scored = room.players.map(function(p){return {p:p, pts:p.score};});
+  scored.sort(function(a,b){return b.pts-a.pts;});
+  var html = '<div class="panel"><h2>🏁 סוף המשחק</h2>';
+  scored.forEach(function(s,idx){
+    html += '<div class="reveal-row'+(idx===0?' winner':'')+'"><span>'+(idx===0?'👑 ':'')+s.p.emoji+' '+s.p.name+'</span><span>'+s.pts+' נק׳</span></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// ================= HAND ACTION MODALS =================
+function humanReplaceStart(){
+  var meP = me();
+  var html = '<h2>החלפת קלף</h2><p class="note">בחר קלף להשליך; לאחר מכן תמשוך קלף חדש.</p><div class="controls">';
+  meP.hand.forEach(function(c,i){ html+='<button data-ri="'+i+'">להשליך: '+cardLabel(c)+'</button>'; });
+  html+='<button class="secondary" id="cancelReplace">בטל</button></div>';
+  showModal(html);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ri]'), function(btn){
+    btn.addEventListener('click', function(){ var ri=parseInt(btn.getAttribute('data-ri'),10); hideModal(); doReplace(ri); });
+  });
+  document.getElementById('cancelReplace').addEventListener('click', hideModal);
+}
+
+function humanSpecialStart(){
+  var meP = me();
+  var specials = meP.hand.map(function(c,i){return {c:c,i:i};}).filter(function(x){return x.c.type==='special';});
+  var html = '<h2>קלף מיוחד</h2><p class="note">בחר קלף להפעיל:</p><div class="controls">';
+  specials.forEach(function(x){ html+='<button data-si="'+x.i+'">'+SPECIALS[x.c.key].icon+' '+SPECIALS[x.c.key].label+'</button>'; });
+  html+='<button class="secondary" id="cancelSpecial">בטל</button></div>';
+  showModal(html);
+  specials.forEach(function(x){ document.querySelector('[data-si="'+x.i+'"]').addEventListener('click', function(){ hideModal(); resolveSpecial(x.i); }); });
+  document.getElementById('cancelSpecial').addEventListener('click', hideModal);
+}
+
+function resolveSpecial(idx){
+  var meP = me();
+  var card = meP.hand[idx];
+  if(card.key==='pm'){
+    var nums = meP.hand.map(function(c,i){return {c:c,i:i};}).filter(function(x){return x.c.type==='num';});
+    if(nums.length===0){ doSpecial(idx,null); return; }
+    var html='<h2>➕➖ פלוס/מינוס</h2><p class="note">בחר קלף להפוך:</p><div class="controls">';
+    nums.forEach(function(x){ html+='<button data-pi="'+x.i+'">'+cardLabel(x.c)+'</button>'; }); html+='</div>'; showModal(html);
+    nums.forEach(function(x){ document.querySelector('[data-pi="'+x.i+'"]').addEventListener('click', function(){ hideModal(); doSpecial(idx,x.i); }); });
+  } else if(card.key==='trash'){
+    var top3 = room.discard.slice(-3);
+    if(top3.length===0){ doSpecial(idx,null); return; }
+    var html2='<h2>🗑️ הזבלן</h2><p class="note">בחר קלף מהפסולת:</p><div class="controls">';
+    top3.forEach(function(c,i){ html2+='<button data-ti="'+i+'">'+cardLabel(c)+'</button>'; }); html2+='</div>'; showModal(html2);
+    top3.forEach(function(c,i){ document.querySelector('[data-ti="'+i+'"]').addEventListener('click', function(){ hideModal(); doSpecial(idx,i); }); });
+  } else if(card.key==='fairy'){
+    var nums2 = meP.hand.map(function(c,i){return {c:c,i:i};}).filter(function(x){return x.c.type==='num' && !x.c.excluded;});
+    if(nums2.length===0){ doSpecial(idx,null); return; }
+    var html3='<h2>🧚 הפיה</h2><p class="note">בחר קלף להוציא מהסכום:</p><div class="controls">';
+    nums2.forEach(function(x){ html3+='<button data-fi="'+x.i+'">'+cardLabel(x.c)+'</button>'; }); html3+='</div>'; showModal(html3);
+    nums2.forEach(function(x){ document.querySelector('[data-fi="'+x.i+'"]').addEventListener('click', function(){ hideModal(); doSpecial(idx,x.i); }); });
+  } else if(card.key==='copy'){
+    var others = meP.hand.map(function(c,i){return {c:c,i:i};}).filter(function(x){return x.i!==idx && x.c.type==='num';});
+    if(others.length===0){ doSpecial(idx,null); return; }
+    var html4='<h2>🎭 המתחזה</h2><p class="note">בחר קלף להעתיק ממנו ערך:</p><div class="controls">';
+    others.forEach(function(x){ html4+='<button data-ci="'+x.i+'">'+cardLabel(x.c)+'</button>'; }); html4+='</div>'; showModal(html4);
+    others.forEach(function(x){ document.querySelector('[data-ci="'+x.i+'"]').addEventListener('click', function(){ hideModal(); doSpecial(idx,x.i); }); });
+  }
+}
+
+// ================= ROUND RESULT MODAL (shared, read-only, one host-like client advances state) =================
+function showRoundResultModal(info){
+  var html = '<h2>'+(info.gold?'🥇 תוצאת עצם הזהב':'🦴 תוצאת הסיבוב')+'</h2><p class="note">מטרה: '+info.target+'</p>';
+  if(info.noWinner){
+    html += '<p class="note">אף שחקן לא הכריז בזמן.</p>';
+  } else {
+    var sorted = info.results.slice().sort(function(a,b){return a.diff-b.diff;});
+    room.players.forEach(function(p){
+      var r = info.results.find(function(rr){return rr.uid===p.uid;});
+      if(!r){ html+='<div class="reveal-row notplaying"><span>'+p.emoji+' '+p.name+'</span><span>לא השתתף/ה</span></div>'; return; }
+      var isWin = info.winnerUid===p.uid;
+      var cardsShown = info.gold ? (r.cards||[]) : p.hand;
+      html += '<div class="reveal-row'+(isWin?' winner':'')+'"><span>'+(isWin?'🏆 ':'')+p.emoji+' '+p.name+'</span>'+
+        '<span class="reveal-hand">'+(cardsShown.length? cardsShown.map(function(c){return '<span>'+cardLabel(c)+(c.excluded?' 🧚':'')+'</span>';}).join('') : '<span>(0)</span>')+'</span>'+
+        '<span>= '+r.sum+(r.over?' (עבר!)':'')+'</span></div>';
+    });
+  }
+  var btnLabel = 'המשך';
+  if(!info.gold && room.mode==='yard') btnLabel = 'המשך לשמירת קלף בחצר';
+  html += '<div class="controls" style="margin-top:12px;"><button class="big" id="afterResultBtn">'+btnLabel+'</button></div>';
+  showModal(html);
+  document.getElementById('afterResultBtn').addEventListener('click', function(){
+    hideModal();
+    if(info.gold){ afterGoldResultAck(); } else { afterWhiteResultAck(info); }
+  });
+}
+
+// Only ONE client needs to actually advance shared state; we use a lightweight
+// "first click wins" approach: whoever presses Continue first writes the next
+// state, and everyone else's onSnapshot just picks up the change. If the
+// human decision (yard save) is required, each player writes just their own choice.
+function afterWhiteResultAck(info){
+  if(room.mode!=='yard'){
+    // straight to next round — only attempt if still pending (avoid double-advance)
+    tryAdvanceRoundIfPending(function(r){
+      r.players.forEach(function(p){ p.hand.forEach(function(c){ discardOn(r,c); }); p.hand=[]; });
+      rotateTurnOrder(r, info.winnerUid);
+      startWhiteRoundOn(r);
+      delete r.pendingRoundResult;
+    });
+    return;
+  }
+  var meP = me();
+  if(meP.uid===info.winnerUid || meP.hand.length===0){
+    markYardDoneFor(meP.uid, info);
+    return;
+  }
+  promptYardSave(meP, function(){ markYardDoneFor(meP.uid, info); });
+}
+
+function markYardDoneFor(uid, info){
+  transactRoom(function(r){
+    if(!r.pendingRoundResult) return false; // already advanced by someone else
+    r._yardDone = r._yardDone || [];
+    if(r._yardDone.indexOf(uid)<0) r._yardDone.push(uid);
+    var needed = info.results.length ? r.players.filter(function(p){return p.uid!==info.winnerUid;}).map(function(p){return p.uid;}) : [];
+    var allDone = needed.every(function(u){ return r._yardDone.indexOf(u)>=0; });
+    if(allDone){
+      r.players.forEach(function(p){ p.hand.forEach(function(c){ discardOn(r,c); }); p.hand=[]; });
+      rotateTurnOrder(r, info.winnerUid);
+      startWhiteRoundOn(r);
+      delete r.pendingRoundResult;
+      delete r._yardDone;
+    }
+  });
+}
+
+function rotateTurnOrder(r, winnerUid){
+  if(!winnerUid) return;
+  var uids = r.players.map(function(p){return p.uid;});
+  var wIdx = uids.indexOf(winnerUid);
+  if(wIdx<0) return;
+  r.turnOrder = uids.map(function(u,i){ return uids[(wIdx+i)%uids.length]; });
+}
+
+function promptYardSave(p, cb){
+  var numericCards = p.hand.map(function(c,i){return {c:c,i:i};}).filter(function(x){return x.c.type==='num';});
+  if(numericCards.length===0){ cb(); return; }
+  var html = '<h2>🏡 שמירה בחצר</h2><p class="note">אפשר לשמור קלף מספר אחד מהיד בחצר (עד 3). שאר הקלפים יושלכו.</p><div class="controls">';
+  numericCards.forEach(function(x){ html+='<button data-hidx="'+x.i+'">שמור: '+cardLabel(x.c)+'</button>'; });
+  html += '<button class="secondary" id="noSaveBtn">אל תשמור כלום</button></div>';
+  showModal(html);
+  numericCards.forEach(function(x){
+    document.querySelector('[data-hidx="'+x.i+'"]').addEventListener('click', function(){
+      hideModal();
+      chooseYardSlotAndSave(p, x.i, cb);
+    });
+  });
+  document.getElementById('noSaveBtn').addEventListener('click', function(){ hideModal(); cb(); });
+}
+
+function chooseYardSlotAndSave(p, handIdx, cb){
+  var freeSlot = p.yard.indexOf(null);
+  function commit(slot){
+    transactRoom(function(r){
+      var pl = r.players.find(function(x){return x.uid===p.uid;});
+      if(!pl || !pl.hand[handIdx]) return false;
+      var card = pl.hand[handIdx];
+      pl.hand.splice(handIdx,1);
+      if(slot>=0){ if(pl.yard[slot]) discardOn(r, pl.yard[slot]); pl.yard[slot]=card; }
+      else { discardOn(r, card); }
+    }).then(cb);
+  }
+  if(freeSlot>=0){ commit(freeSlot); return; }
+  var html='<h2>החצר מלאה</h2><p class="note">בחר קלף להחליף:</p><div class="controls">'+
+    '<button data-sidx="0">משבצת 1</button><button data-sidx="1">משבצת 2</button><button data-sidx="2">משבצת 3</button>'+
+    '<button class="secondary" id="cancelSave">בטל שמירה</button></div>';
+  showModal(html);
+  [0,1,2].forEach(function(si){ document.querySelector('[data-sidx="'+si+'"]').addEventListener('click', function(){ hideModal(); commit(si); }); });
+  document.getElementById('cancelSave').addEventListener('click', function(){ hideModal(); commit(-1); });
+}
+
+function afterGoldResultAck(){
+  tryAdvanceRoundIfPending(function(r){
+    if(r.goldBones.length===0){ r.status='over'; r.phase='over'; r.roundActive=false; }
+    else { startGoldPhaseOn(r); }
+    delete r.pendingRoundResult;
+  });
+}
+
+function tryAdvanceRoundIfPending(mutateFn){
+  transactRoom(function(r){
+    if(!r.pendingRoundResult) return false; // someone else already advanced it
+    mutateFn(r);
+  });
+}
+
+function promptGoldChoice(p){
+  var slots = p.yard.map(function(c,i){return {idx:i,card:c};}).filter(function(s){return s.card;});
+  var checked = {};
+  var html = '<h2>🥇 עצם הזהב: '+room.currentBone.value+'</h2><p class="note">בחר אילו קלפים מהחצר לחשוף, ואז החלט אם להכריז.</p><div class="controls" id="goldPicks">';
+  slots.forEach(function(s){ html+='<button data-gidx="'+s.idx+'" class="secondary" id="gpick'+s.idx+'">קלף: '+cardLabel(s.card)+'</button>'; });
+  html += '</div><p class="note" id="goldSumNote">סכום נבחר: 0</p>'+
+    '<div class="controls" style="margin-top:8px;"><button class="declare" id="goldDeclareBtn">📣 הכרז והתחרה</button><button class="secondary" id="goldSkipBtn">לא להתחרות</button></div>';
+  showModal(html);
+  function updateSum(){ var sum=0; slots.forEach(function(s){ if(checked[s.idx]) sum+=cardValue(s.card); }); document.getElementById('goldSumNote').textContent='סכום נבחר: '+sum; }
+  slots.forEach(function(s){
+    document.getElementById('gpick'+s.idx).addEventListener('click', function(){
+      checked[s.idx]=!checked[s.idx];
+      var el=document.getElementById('gpick'+s.idx);
+      el.style.opacity=checked[s.idx]?'1':'0.5'; el.style.outline=checked[s.idx]?'2px solid var(--accent)':'none';
+      updateSum();
+    });
+  });
+  document.getElementById('goldDeclareBtn').addEventListener('click', function(){
+    var chosenIdx = Object.keys(checked).filter(function(k){return checked[k];}).map(function(k){return parseInt(k,10);});
+    submitGoldChoice(p.uid, true, chosenIdx);
+    hideModal();
+  });
+  document.getElementById('goldSkipBtn').addEventListener('click', function(){ submitGoldChoice(p.uid, false, []); hideModal(); });
+}
+
+function submitGoldChoice(uid, declared, chosenIdx){
+  transactRoom(function(r){
+    var p = r.players.find(function(x){return x.uid===uid;});
+    if(declared && p.score>=1){ p.declared=true; r.declaredIds.push(uid); p._goldChosenIdx=chosenIdx; addLogOn(r, p.emoji+' '+p.name+' הכריז/ה על עצם הזהב.'); }
+    r._awaitingGoldChoices = (r._awaitingGoldChoices||[]).filter(function(u){return u!==uid;});
+    if(r._awaitingGoldChoices.length===0){ resolveGoldRoundOn(r); }
+  });
+}
+
+// ================= MODAL HELPERS =================
+function showModal(html){ document.getElementById('modal').innerHTML=html; document.getElementById('overlay').classList.remove('hidden'); }
+function hideModal(){ document.getElementById('overlay').classList.add('hidden'); }
+
+render();
+})();
+</script>
+</body>
+</html>
